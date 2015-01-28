@@ -32,6 +32,7 @@ def loadListFromFile(filename):
             line = f.readline()
             if line == '':
                 break
+            #FIXME other line breaks?
             l.append(line.strip('\n'))
     except IOError:
         #FIXME
@@ -45,8 +46,15 @@ def loadListFromFile(filename):
 
 
 class TemplateMatcher:
+    """ Provides Template Matching functionality. """
 
     def __init__(self, template, landscape):
+        """ Initialize by providing a template and landscape.
+
+        Keyword arguments:
+        template -- List of strings. ' ' matches every field.
+        landscape -- List of strings. The data the template is matched to.
+        """
         self.template = template
         self.landscape = landscape
         pass
@@ -54,7 +62,7 @@ class TemplateMatcher:
 
     def countTemplate(self):
         """Returns the number of occurrences of the template in the landscape."""
-        positions = matchTemplate()
+        positions = self.matchTemplate()
         return len(positions)
 
 
@@ -72,8 +80,8 @@ class TemplateMatcher:
         for y, row in enumerate(self.landscape[:-(heightT-1)]):
             for x, field in enumerate(row):
                 # check the template
-                def match():
-                    for ty, trow in enumerate(self.template):
+                def match(template):
+                    for ty, trow in enumerate(template):
                         for tx, tfield in enumerate(trow):
                             # the template extends the border of the landscape
                             if (tx+x > len(row)-1):
@@ -86,7 +94,7 @@ class TemplateMatcher:
                                 return False
                     return True
 
-                if (match()):
+                if (match(self.template)):
                     positions.append((x,y))
 
             # end for
@@ -105,6 +113,10 @@ def printUsage():
 def main():
     
     # handle command line options
+    if (len(sys.argv) >= 2):
+        if (sys.argv[1] in ["-h", "--help"]):
+            printUsage()
+            exit(0)
     if (len(sys.argv) != 3):
         printUsage()
         exit(1)
@@ -115,12 +127,16 @@ def main():
     template = loadListFromFile(templateFile)
     landscape = loadListFromFile(landscapeFile)
     if (template == [] or landscape == []):
+        printUsage()
         exit(1)
 
+    # process
     tm = TemplateMatcher(template, landscape)
-
+    print("The template was found #" + str(tm.countTemplate()) + 
+            " times in the landscape.")
     
 
 
 if __name__ == "__main__":
     main()
+
